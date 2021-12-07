@@ -5,7 +5,8 @@ sources = \
 	gl_core_3_3.c
 libs = \
 	-lGL \
-	-lglut
+	-lglut \
+	-limgui
 outname = final
 
 all:
