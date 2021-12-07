@@ -50,6 +50,7 @@ void main() {
 	float STONE = 3.0;
 	int fire_life = 100;
 	int ice_life = 500;
+	int plant_life = 1000;
 	vec2 GRAV = vec2(0, -9.81);
 	vec4 ERASE = vec4(0, 0, 0, 0);
 
@@ -78,7 +79,7 @@ void main() {
 		} else if (type == ICE) {
 			outCol = vec4(type, ice_life, 0.0, GRAV.y);
 		} else if (type == PLANT) {
-			outCol = vec4(type, timeSinceStart, 0.0, GRAV.y);
+			outCol = vec4(type, plant_life, 0.0, GRAV.y);
 		}
 	} else if (c.x == BLOCK) {
 		// Check if BLOCK
@@ -89,7 +90,7 @@ void main() {
 		vec4 b  = texelFetch(prevTex, texelCoord + ivec2( 0, -1), 0);
 		vec4 l  = texelFetch(prevTex, texelCoord + ivec2(-1,  0), 0);
 		vec4 r  = texelFetch(prevTex, texelCoord + ivec2( 1,  0), 0);
-		
+
 		vec4 tl = texelFetch(prevTex, texelCoord + ivec2(-1,  1), 0);
 		vec4 tr = texelFetch(prevTex, texelCoord + ivec2( 1,  1), 0);
 		vec4 bl = texelFetch(prevTex, texelCoord + ivec2(-1, -1), 0);
@@ -101,14 +102,14 @@ void main() {
 		vec4 tt		= texelFetch(prevTex, texelCoord + ivec2( 0,  2), 0);
 		vec4 ttr	= texelFetch(prevTex, texelCoord + ivec2( 1,  2), 0);
 		vec4 ttrr	= texelFetch(prevTex, texelCoord + ivec2( 2,  2), 0);
-		
+
 		vec4 tll	= texelFetch(prevTex, texelCoord + ivec2(-2,  1), 0);
 		vec4 trr	= texelFetch(prevTex, texelCoord + ivec2( 2,  1), 0);
 		vec4 ll		= texelFetch(prevTex, texelCoord + ivec2(-2,  0), 0);
 		vec4 rr		= texelFetch(prevTex, texelCoord + ivec2( 2,  0), 0);
 		vec4 bll	= texelFetch(prevTex, texelCoord + ivec2(-2, -1), 0);
 		vec4 brr	= texelFetch(prevTex, texelCoord + ivec2( 2, -1), 0);
-		
+
 		vec4 bbll	= texelFetch(prevTex, texelCoord + ivec2(-2, -2), 0);
 		vec4 bbl	= texelFetch(prevTex, texelCoord + ivec2(-1, -2), 0);
 		vec4 bb		= texelFetch(prevTex, texelCoord + ivec2( 0, -2), 0);
@@ -245,16 +246,16 @@ void main() {
 		float ftt	= abs(dot(vec2(tt.z, tt.w), tt.x * GRAV));
 		float fttr	= abs(dot(vec2(ttr.z, ttr.w), ttr.x * GRAV));
 		float fttrr = abs(dot(vec2(ttrr.z, ttrr.w), ttrr.x * GRAV));
-		
+
 		float ftll	= abs(dot(vec2(tll.z, tll.w), tll.x * GRAV));
 		float ftrr	= abs(dot(vec2(trr.z, trr.w), trr.x * GRAV));
 		float fll	= abs(dot(vec2(ll.z, ll.w), ll.x * GRAV));
 		float frr	= abs(dot(vec2(rr.z, rr.w), rr.x * GRAV));
 		float fbll	= abs(dot(vec2(bll.z, bll.w), bll.x * GRAV));
 		float fbrr	= abs(dot(vec2(brr.z, brr.w), brr.x * GRAV));
-		
+
 		float fbbll = abs(dot(vec2(bbll.z, bbll.w), bbll.x * GRAV));
-		float fbbl	= abs(dot(vec2(bbl.z, bbl.w), bbl.x * GRAV)); 
+		float fbbl	= abs(dot(vec2(bbl.z, bbl.w), bbl.x * GRAV));
 		float fbb	= abs(dot(vec2(bb.z, bb.w), bb.x * GRAV));
 		float fbbr	= abs(dot(vec2(bbr.z, bbr.w), bbr.x * GRAV));
 		float fbbrr = abs(dot(vec2(bbrr.z, bbrr.w), bbrr.x * GRAV));
@@ -264,19 +265,19 @@ void main() {
 		int willMove = 0;	// t - 1, tl - 2, l - 3, bl - 4, b - 5, br - 6, r - 7, tr - 8, empty - 9
 
 		// Check if something else will take pixel location instead of me
-		// AKA check if something surrounding the pixel I want to move to has a greater force than 
+		// AKA check if something surrounding the pixel I want to move to has a greater force than
 		// TODO - CHECK IF PIXEL WILL MOVE INTO THE PIXEL I WANT (DIR CHECK FOR EACH), then check the new pixel it would move into (pretty sure it applies to diagonals only)
 		if (canMove == 1) {	// Top
-			if ((fl >= curForce && l.z > 0 && l.w > 0) || (ftl >= curForce && tl.z > 0 && tl.w == 0) || (fttl >= curForce && ttl.z > 0 && ttl.w < 0) || 
-					(ftt >= curForce && tt.z == 0 && tt.w < 0) || (fttr >= curForce && ttr.z < 0 && ttr.w < 0) || (ftr >= curForce && tr.z < 0 && tr.w == 0) || 
+			if ((fl >= curForce && l.z > 0 && l.w > 0) || (ftl >= curForce && tl.z > 0 && tl.w == 0) || (fttl >= curForce && ttl.z > 0 && ttl.w < 0) ||
+					(ftt >= curForce && tt.z == 0 && tt.w < 0) || (fttr >= curForce && ttr.z < 0 && ttr.w < 0) || (ftr >= curForce && tr.z < 0 && tr.w == 0) ||
 						(fr >= curForce && r.z < 0 && r.w > 0)) {
 				hitDir = 1;
 			} else {
 				willMove = 1;
 			}
 		} else if (canMove == 2) {	// Top Left
-			if ((fl >= curForce && l.z == 0 && l.w > 0) || (fll >= curForce && ll.z > 0 && ll.w > 0) || (ftll >= curForce && tll.z > 0 && tll.w == 0) || 
-					(fttll >= curForce && ttll.z > 0 && ttll.w < 0) || (fttl >= curForce && ttl.z == 0 && ttl.w < 0) || (ftt >= curForce && tt.z < 0 && tt.w < 0) || 
+			if ((fl >= curForce && l.z == 0 && l.w > 0) || (fll >= curForce && ll.z > 0 && ll.w > 0) || (ftll >= curForce && tll.z > 0 && tll.w == 0) ||
+					(fttll >= curForce && ttll.z > 0 && ttll.w < 0) || (fttl >= curForce && ttl.z == 0 && ttl.w < 0) || (ftt >= curForce && tt.z < 0 && tt.w < 0) ||
 						(ft >= curForce && t.z < 0 && t.w == 0)) {
 				hitDir = 2;
 			} else {
@@ -293,16 +294,16 @@ void main() {
 				}
 			}
 		} else if (canMove == 3) {	// Left
-			if ((fb >= curForce && b.z < 0 && b.w > 0) || (fbl >= curForce && bl.z == 0 && bl.w > 0) || (fbll >= curForce && bll.z > 0 && bll.w > 0) || 
-					(fll >= curForce && ll.z > 0 && ll.w == 0) || (ftll >= curForce && tll.z > 0 && tll.w < 0) || (ftl >= curForce && tl.z == 0 && tl.w < 0) || 
+			if ((fb >= curForce && b.z < 0 && b.w > 0) || (fbl >= curForce && bl.z == 0 && bl.w > 0) || (fbll >= curForce && bll.z > 0 && bll.w > 0) ||
+					(fll >= curForce && ll.z > 0 && ll.w == 0) || (ftll >= curForce && tll.z > 0 && tll.w < 0) || (ftl >= curForce && tl.z == 0 && tl.w < 0) ||
 						(ft >= curForce && t.z < 0 && t.w < 0)) {
 				hitDir = 3;
 			} else {
 				willMove = 3;
 			}
 		} else if (canMove == 4) {	// Bottom Left
-			if ((fb >= curForce && b.z < 0 && b.w == 0) || (fbb >= curForce && bb.z < 0 && bb.w > 0) || (fbbl >= curForce && bbl.z == 0 && bbl.w > 0) || 
-					(fbbll >= curForce && bbll.z > 0 && bbll.w > 0) || (fbll >= curForce && bll.z > 0 && bll.w == 0) || (fll >= curForce && ll.z > 0 && ll.w < 0) || 
+			if ((fb >= curForce && b.z < 0 && b.w == 0) || (fbb >= curForce && bb.z < 0 && bb.w > 0) || (fbbl >= curForce && bbl.z == 0 && bbl.w > 0) ||
+					(fbbll >= curForce && bbll.z > 0 && bbll.w > 0) || (fbll >= curForce && bll.z > 0 && bll.w == 0) || (fll >= curForce && ll.z > 0 && ll.w < 0) ||
 						(fl >= curForce && l.z == 0 && ll.w < 0)) {
 				hitDir = 4;
 			} else {
@@ -320,16 +321,16 @@ void main() {
 				}
 			}
 		} else if (canMove == 5) {	// Bottom
-			if ((fr >= curForce && r.z < 0 && r.w < 0) || (fbr >= curForce && br.z < 0 && br.w == 0) || (fbbr >= curForce && bbr.z < 0 && bbr.w > 0) || 
-					(fbb >= curForce && bb.z == 0 && bb.w > 0) || (fbbl >= curForce && bbl.z > 0 && bbl.w > 0) || (fbl >= curForce && bl.z > 0 && bl.w == 0) || 
+			if ((fr >= curForce && r.z < 0 && r.w < 0) || (fbr >= curForce && br.z < 0 && br.w == 0) || (fbbr >= curForce && bbr.z < 0 && bbr.w > 0) ||
+					(fbb >= curForce && bb.z == 0 && bb.w > 0) || (fbbl >= curForce && bbl.z > 0 && bbl.w > 0) || (fbl >= curForce && bl.z > 0 && bl.w == 0) ||
 						(fl >= curForce && l.z > 0 && l.w < 0)) {
 				hitDir = 5;
 			} else {
 				willMove = 5;
 			}
 		} else if (canMove == 6) {	// Bottom Right
-			if ((fr >= curForce && r.z == 0 && r.w < 0) || (frr >= curForce && rr.z < 0 && rr.w < 0) || (fbrr >= curForce && brr.z < 0 && brr.w == 0) || 
-					(fbbrr >= curForce && bbrr.z < 0 && bbrr.w > 0) || (fbbr >= curForce && bbr.z == 0 && bbr.w > 0) || (fbb >= curForce && bb.z > 0 && bb.w > 0) || 
+			if ((fr >= curForce && r.z == 0 && r.w < 0) || (frr >= curForce && rr.z < 0 && rr.w < 0) || (fbrr >= curForce && brr.z < 0 && brr.w == 0) ||
+					(fbbrr >= curForce && bbrr.z < 0 && bbrr.w > 0) || (fbbr >= curForce && bbr.z == 0 && bbr.w > 0) || (fbb >= curForce && bb.z > 0 && bb.w > 0) ||
 						(fb >= curForce && b.z > 0 && b.w == 0)) {
 				hitDir = 6;
 			} else {
@@ -348,7 +349,7 @@ void main() {
 			}
 		} else if (canMove == 7) {	// Right
 			if ((ft >= curForce && t.z > 0 && t.w < 0) || (ftr >= curForce && tr.z == 0 && tr.w < 0) || (ftrr >= curForce && trr.z < 0 && trr.w < 0) ||
-					(frr >= curForce && rr.z < 0 && rr.w == 0) || (fbrr >= curForce && brr.z < 0 && brr.w > 0) || (fbr >= curForce && br.z == 0 && br.w > 0) || 
+					(frr >= curForce && rr.z < 0 && rr.w == 0) || (fbrr >= curForce && brr.z < 0 && brr.w > 0) || (fbr >= curForce && br.z == 0 && br.w > 0) ||
 						(fb >= curForce && b.z > 0 && b.w > 0)) {
 				hitDir = 7;
 			} else {
@@ -356,7 +357,7 @@ void main() {
 			}
 		} else if (canMove == 8) {	// Top Right
 			if ((ft >= curForce && t.z > 0 && t.w == 0) || (ftt >= curForce && tt.z > 0 && tt.w < 0) || (fttr >= curForce && ttr.z == 0 && ttr.w < 0) ||
-					(fttrr >= curForce && ttrr.z < 0 && ttrr.w < 0) || (ftrr >= curForce && trr.z < 0 && trr.w == 0) || (frr >= curForce && rr.z < 0 && trr.w > 0) || 
+					(fttrr >= curForce && ttrr.z < 0 && ttrr.w < 0) || (ftrr >= curForce && trr.z < 0 && trr.w == 0) || (frr >= curForce && rr.z < 0 && trr.w > 0) ||
 						(fr >= curForce && r.z == 0 && r.w > 0)) {
 				hitDir = 8;
 			} else {
@@ -623,6 +624,35 @@ void main() {
 						c.y = t.y;
 						c.z = t.z;
 						c.w = t.w;
+					} else if (b.x == PLANT || br.x == PLANT || bl.x == PLANT || l.x == PLANT || r.x == PLANT || tr.x == PLANT || t.x == PLANT || tl.x == PLANT) {
+						if (bb.x == DIRT && randNumber % 2 == 0) {
+							c.x = PLANT;
+							c.y = plant_life;
+							c.z = 0.0;
+							c.w = 0.0;
+						} else if (bbr.x == DIRT && randNumber % 2 == 1) {
+							c.x = PLANT;
+							c.y = plant_life;
+							c.z = 0.0;
+							c.w = 0.0;
+						} else if (bbl.x == DIRT && randNumber % 2 == 1) {
+							c.x = PLANT;
+							c.y = plant_life;
+							c.z = 0.0;
+							c.w = 0.0;
+						} else if (randNumber % 2 == 0) {
+							c = ERASE;
+						} else if (randNumber % 11 == 0) {
+							c.x = PLANT;
+							c.y = plant_life;
+							c.z = 0.0;
+							c.w = 0.0;
+						} else if (bb.x == PLANT || bbr.x == PLANT || bbl.x == PLANT || tt.x == PLANT || ttr.x == PLANT || ttl.x == PLANT) {
+							c.x = PLANT;
+							c.y = plant_life;
+							c.z = 0.0;
+							c.w = 0.0;
+						}
 					}
 				} else if (c.x == MAGMA) {
 					if (timeSinceStart - c.y > 200) {
@@ -674,6 +704,40 @@ void main() {
 						c.y = b.y;
 						c.z = b.z;
 						c.w = b.w;
+					} else if (b.x == PLANT) {
+						c.x = b.x;
+						c.y = b.y;
+						c.z = b.z;
+						c.w = b.w;
+					}
+				} else if (c.x == PLANT) {
+					if (t.x == FIRE || tl.x == FIRE || l.x == FIRE || bl.x == FIRE || b.x == FIRE || br.x == FIRE || r.x == FIRE || tr.x == FIRE) {
+						c.x = FIRE;
+						c.y = fire_life;
+						c.z = 0.0;
+						c.w = -1.0 * GRAV.y;
+					} else if (t.x == MAGMA || tl.x == MAGMA || l.x == MAGMA || bl.x == MAGMA || b.x == MAGMA || br.x == MAGMA || r.x == MAGMA || tr.x == MAGMA) {
+						c.x = FIRE;
+						c.y = fire_life;
+						c.z = 0.0;
+						c.w = -1.0 * GRAV.y;
+					} else if (b.x == DIRT) {
+						c.y = plant_life;
+						c.z = 0.0;
+						c.w = 0.0;
+					} else if (t.x == DIRT) {
+						c.x = t.x;
+						c.y = t.y;
+						c.z = t.z;
+						c.w = t.w;
+					} else {
+						if (c.y < 0.0) {
+							c.x = DIRT;
+							c.y = timeSinceStart;
+							c.z = 0.0;
+							c.w = GRAV.y;
+						}
+						c.y -= 1.0;
 					}
 				}
 			} else {

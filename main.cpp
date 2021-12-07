@@ -11,7 +11,14 @@
 #include "imgui.h"
 #include "imgui_impl_glut.h"
 #include "imgui_impl_opengl3.h"
+#include <string>
+#include <fstream>
+#include <vector>
+#include <utility> // std::pair
+#include <stdexcept> // std::runtime_error
+#include <sstream> // std::stringstream
 using namespace std;
+
 
 // Stuff Stored in Texture
 // Mass/Type, Time, XDir, YDir
@@ -44,6 +51,7 @@ float type_arr[10];
 int idx;
 int randNumber;
 int timeSinceStart;
+bool show_app_fullscreen = true;
 
 // ImGui States
 static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.70f, 1.00f);
@@ -73,6 +81,9 @@ void cleanup();
 // ImGui Functions
 void my_display_code();
 void clear_texture();
+void ShowExampleAppFullscreen(bool* p_open);
+void SaveTexture();
+void LoadTexture();
 
 int main(int argc, char** argv) {
 	try {
@@ -342,21 +353,21 @@ void display() {
 
 		// Do multiple steps before displaying the results
 		// for (int i = 0; i < nsteps; i++) {
-				
+
 		// Clear the texture
 		glClear(GL_COLOR_BUFFER_BIT);
-				
+
 		// Use the previous texture output as input
 		glActiveTexture(GL_TEXTURE0 + 0);
 		glBindTexture(GL_TEXTURE_2D, prevTexture);
-		
+
 		// Draw the quad to invoke the shader
 		glDrawElements(GL_TRIANGLES, vcount, GL_UNSIGNED_INT, NULL);
 
 		// Swap prev and curr textures
 		std::swap(prevTexture, currTexture);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, currTexture, 0);
-		
+
 		// }
 
 
@@ -390,7 +401,7 @@ void display() {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
-	
+
 		// Rendering
 		ImGui::Render();
 	    glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
@@ -478,7 +489,7 @@ void mouseMove(bool dragging, int x, int y) {
 }
 
 void idle() {
-	if (updateTimer == 10000)	{ 
+	if (updateTimer == 10000)	{
 		glutPostRedisplay();
 		updateTimer = 0;
 		//std::cout << "My Pixel: " << initTexData[56 * texWidth + 56].x << " " << initTexData[56 * texWidth + 56].y << " " << initTexData[56 * texWidth + 56].z << " " << initTexData[56 * texWidth + 56].w << "\n";
@@ -536,10 +547,13 @@ void my_display_code() {
 	ImGui::SetNextWindowPos(ImVec2(0.0, 0.0), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(215.0, 135.0), ImGuiCond_Once);
 
-    {
+	static bool save_texture = false;
+	static bool load_texture = false;
+
+	{
         ImGui::Begin("Click Here to Get Started!");
 
-		const char* elems_names[10] = { "Erase", "Block", "Steam", "Water", "Ice", "Plants", "Dirt", "Stone", "Magma", "Fire" };		
+		const char* elems_names[10] = { "Erase", "Block", "Steam", "Water", "Ice", "Plants", "Dirt", "Stone", "Magma", "Fire" };
 		const char* selection[2] = { "Yes", "No" };
 
 		static int selected = 3;
@@ -555,6 +569,15 @@ void my_display_code() {
 
 		if (ImGui::Button("ERASE ALL"))
             ImGui::OpenPopup("my_select_popup");
+		ImGui::SameLine();
+		if (ImGui::Button("Show Start"))
+			show_app_fullscreen = true;
+
+		if (ImGui::Button("Save"))
+			ImGui::OpenPopup("save_popup");
+		ImGui::SameLine();
+		if (ImGui::Button("Load"))
+			ImGui::OpenPopup("load_popup");
 
         if (ImGui::BeginPopup("my_select_popup"))
         {
@@ -566,7 +589,29 @@ void my_display_code() {
 						toClearTexture = true;
             ImGui::EndPopup();
         }
-			
+
+		if (ImGui::BeginPopup("save_popup"))
+        {
+            ImGui::Text("Are you sure?");
+            ImGui::Separator();
+            for (int i = 0; i < IM_ARRAYSIZE(selection); i++)
+                if (ImGui::Selectable(selection[i]))
+                    if (i == 0)
+						save_texture = true;
+            ImGui::EndPopup();
+        }
+
+		if (ImGui::BeginPopup("load_popup"))
+        {
+            ImGui::Text("Are you sure?");
+            ImGui::Separator();
+            for (int i = 0; i < IM_ARRAYSIZE(selection); i++)
+                if (ImGui::Selectable(selection[i]))
+                    if (i == 0)
+						load_texture = true;
+            ImGui::EndPopup();
+        }
+
 		ImGui::End();
     }
 
@@ -579,10 +624,132 @@ void my_display_code() {
 		clear_texture();
 		toClearTexture = false;
 	}
+
+	if (show_app_fullscreen)
+		ShowExampleAppFullscreen(&show_app_fullscreen);
+
+	if (save_texture) {
+		SaveTexture();
+		save_texture = false;
+	}
+
+	if (load_texture) {
+		LoadTexture();
+		load_texture = false;
+	}
+}
+
+static void ShowExampleAppFullscreen(bool* p_open)
+{
+    static bool use_work_area = true;
+    static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+
+    // We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
+    // Based on your use case you may want one of the other.
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
+    ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
+
+    if (ImGui::Begin("Welcome to the Powder Pixel Physics Simulator!", p_open, flags))
+    {
+        ImGui::Text("Welcome to the Powder Pixel Physics Simulator!");
+		ImGui::Separator();
+		ImGui::Text("\nSummary:");
+		ImGui::Text("The simulator has 10 different kinds of blocks to play with!");
+		ImGui::Text("By looking in the top left, you'll see a menu where you can select");
+		ImGui::Text("whichever element you want to try. They each have their own unique");
+		ImGui::Text("properties based on their real life counterparts. While this is not");
+		ImGui::Text("a perfect simulation, there are some cool interactions between the");
+		ImGui::Text("different types of blocks.\n");
+		ImGui::Text("Please Note: If you are playing this online (which means I was very proactive),");
+		ImGui::Text("save states will not work between sessions :)\n");
+		ImGui::Text("\n");
+		ImGui::Text("\nControls:");
+		ImGui::Text("Left Mouse Click - Select Blocks, Drag the Window, Button Presser");
+		ImGui::Text("\n");
+		ImGui::Text("\nCheck Out My Github!");
+		ImGui::Text("github.com/smit3407");
+		ImGui::Separator();
+        if (p_open && ImGui::Button("Close"))
+            *p_open = false;
+    }
+    ImGui::End();
 }
 
 void clear_texture() {
+	// glBindTexture(GL_TEXTURE_2D, prevTexture);
+	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texWidth, texHeight, GL_RGB, GL_UNSIGNED_BYTE, initTexData.data());
+	// glBindTexture(GL_TEXTURE_2D, 0);
 	glBindTexture(GL_TEXTURE_2D, prevTexture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texWidth, texHeight, GL_RGB, GL_UNSIGNED_BYTE, initTexData.data());
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texWidth, texHeight, 0, GL_RGBA, GL_FLOAT, initTexData.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+static void SaveTexture() {
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texWidth, texHeight, 0, GL_RGBA, GL_FLOAT, initTexData.data());
+	//  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texWidth, texHeight, GL_RGB, GL_UNSIGNED_BYTE, initTexData.data());
+	vector<glm::vec4> data = vector<glm::vec4>(texWidth * texHeight, glm::vec4(0.0, 0.0, 0.0, 0.0));
+	glBindTexture(GL_TEXTURE_2D, prevTexture);
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, data.data());
+
+	// Write data to file
+	std::ofstream myFile("tex.csv");
+	for(int i = 0; i < data.size(); ++i)
+    {
+        myFile << data[i].x << "," << data[i].y << "," << data[i].z << "," << data[i].w <<"\n";
+    }
+
+    // Close the file
+    myFile.close();
+}
+
+static void LoadTexture() {
+	vector<glm::vec4> data = vector<glm::vec4>(texWidth * texHeight, glm::vec4(0.0, 0.0, 0.0, 0.0));
+
+	// Read data from file
+    // Create an input filestream
+    std::ifstream myFile("tex.csv");
+
+    // Make sure the file is open
+    if(!myFile.is_open()) throw std::runtime_error("Could not open file");
+
+    // Helper vars
+    std::string line, colname;
+    float val;
+	int i = 0;
+
+    // Read data, line by line
+    while(std::getline(myFile, line))
+    {
+        // Create a stringstream of the current line
+        std::stringstream ss(line);
+
+        // Keep track of the current column index
+        int colIdx = 0;
+		glm::vec4 values = glm::vec4(0.0);
+
+        // Extract each integer
+        while(ss >> val){
+
+            // Add the current integer to the 'colIdx' column's values vector
+			values[colIdx] = val;
+
+            // If the next token is a comma, ignore it and move on
+            if(ss.peek() == ',') ss.ignore();
+
+            // Increment the column index
+            colIdx++;
+        }
+		data[i++] = values;
+    }
+
+	glBindTexture(GL_TEXTURE_2D, prevTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texWidth, texHeight, 0, GL_RGBA, GL_FLOAT, data.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }

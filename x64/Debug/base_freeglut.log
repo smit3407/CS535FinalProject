@@ -1,11 +1,11 @@
 ﻿  main.cpp
-c:\users\andre\documents\cs 535\finalproject\main.cpp(147): warning C4305: '=': truncation from 'double' to 'float'
-c:\users\andre\documents\cs 535\finalproject\main.cpp(247): warning C4267: '=': conversion from 'size_t' to 'GLsizei', possible loss of data
-c:\users\andre\documents\cs 535\finalproject\main.cpp(326): warning C4244: '=': conversion from 'float' to 'GLint', possible loss of data
-c:\users\andre\documents\cs 535\finalproject\main.cpp(327): warning C4244: '=': conversion from 'float' to 'GLint', possible loss of data
-c:\users\andre\documents\cs 535\finalproject\main.cpp(574): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\andre\documents\cs 535\finalproject\main.cpp(575): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-c:\users\andre\documents\cs 535\finalproject\main.cpp(549): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+c:\users\andre\documents\cs 535\finalproject\main.cpp(158): warning C4305: '=': truncation from 'double' to 'float'
+c:\users\andre\documents\cs 535\finalproject\main.cpp(258): warning C4267: '=': conversion from 'size_t' to 'GLsizei', possible loss of data
+c:\users\andre\documents\cs 535\finalproject\main.cpp(337): warning C4244: '=': conversion from 'float' to 'GLint', possible loss of data
+c:\users\andre\documents\cs 535\finalproject\main.cpp(338): warning C4244: '=': conversion from 'float' to 'GLint', possible loss of data
+c:\users\andre\documents\cs 535\finalproject\main.cpp(619): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\andre\documents\cs 535\finalproject\main.cpp(620): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+c:\users\andre\documents\cs 535\finalproject\main.cpp(563): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.18362.0\ucrt\stdio.h(1774): note: see declaration of 'sprintf'
   base_freeglut.vcxproj -> C:\Users\andre\Documents\CS 535\FinalProject\x64\Debug\base_freeglut.exe
   base_freeglut.vcxproj -> C:\Users\andre\Documents\CS 535\FinalProject\x64\Debug\base_freeglut.pdb (Full PDB)
